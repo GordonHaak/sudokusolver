@@ -39,10 +39,7 @@ impl Default for SudokuClassic {
 impl fmt::Display for SudokuClassic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for r in 0..SudokuClassic::ROWS - 1 {
-            for i in self.row(r) {
-                write!(f, "{:?}", i)?;
-            }
-            writeln!(f, "");
+            writeln!(f, "{:?}", self.row(r).collect::<Vec<_>>())?;
         }
         Ok(())
     }
