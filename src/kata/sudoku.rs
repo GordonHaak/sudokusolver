@@ -22,6 +22,10 @@ impl SudokuClassic {
         iterator::LineIterator::new(self, row)
     }
 
+    //    pub fn free_fields(&self) -> iterator::FreFieldIterator {
+    //        iterator::FreeField::new(self)
+    //    }
+
     fn index(row: u8, col: u8) -> usize {
         if row >= SudokuClassic::ROWS || col >= SudokuClassic::COLS {
             panic!("invalid index for Sudoku row {}, col {}", row, col);
