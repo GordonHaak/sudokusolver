@@ -18,13 +18,21 @@ impl SudokuClassic {
         }
     }
 
-    pub fn row(&self, row: u8) -> iterator::LineIterator {
-        iterator::LineIterator::new(self, row)
+    pub fn row<'a>(&'a self, row: u8) -> Box<dyn Iterator<Item = &'a Option<u8>> + 'a> {
+        Box::new(iterator::LineIterator::new(self, row))
     }
 
-    //    pub fn free_fields(&self) -> iterator::FreFieldIterator {
-    //        iterator::FreeField::new(self)
-    //    }
+    pub fn col<'a>(&'a self, col: u8) -> Box<dyn Iterator<Item = &'a Option<u8>> + 'a> {
+        Box::new(iterator::ColumnIterator::new(self, col))
+    }
+
+    pub fn field<'a>(&'a self, row: u8, col: u8) -> Box<dyn Iterator<Item = &'a Option<u8>> + 'a> {
+        Box::new(iterator::FieldIterator::new(self, row, col))
+    }
+
+    pub fn next_free_field(&mut self) -> Option<(u8, u8)> {
+        None
+    }
 
     fn index(row: u8, col: u8) -> usize {
         if row >= SudokuClassic::ROWS || col >= SudokuClassic::COLS {
@@ -43,7 +51,8 @@ impl Default for SudokuClassic {
 impl fmt::Display for SudokuClassic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for r in 0..SudokuClassic::ROWS - 1 {
-            writeln!(f, "{:?}", self.row(r).collect::<Vec<_>>())?;
+            let row = self.row(r);
+            writeln!(f, "{:?}", row.collect::<Vec<_>>())?;
         }
         Ok(())
     }
@@ -63,5 +72,34 @@ mod tests {
     fn invalid_sudoku_access() {
         let sudoku = super::SudokuClassic::new();
         assert_eq!(sudoku[(9, 0)], None);
+    }
+
+    #[test]
+    fn field_iter() {
+        let mut sudoku = super::SudokuClassic::new();
+        sudoku[(3, 3)] = Some(1);
+        sudoku[(3, 4)] = Some(2);
+        sudoku[(3, 5)] = Some(3);
+        sudoku[(4, 3)] = Some(4);
+        sudoku[(4, 4)] = Some(5);
+        sudoku[(4, 5)] = Some(6);
+        sudoku[(5, 3)] = Some(7);
+        sudoku[(5, 4)] = Some(8);
+        sudoku[(5, 5)] = Some(9);
+        assert_eq!(
+            sudoku.field(4, 5).map(|v| v.clone()).collect::<Vec<_>>(),
+            vec![
+                Some(1),
+                Some(2),
+                Some(3),
+                Some(4),
+                Some(5),
+                Some(6),
+                Some(7),
+                Some(8),
+                Some(9)
+            ]
+        );
+        println!("Sudoku is : \n{}", sudoku);
     }
 }
