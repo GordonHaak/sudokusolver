@@ -1,7 +1,18 @@
 use kata::kata::sudoku::SudokuClassic;
 
-fn main() {
-    let mut s = SudokuClassic::new();
-    s[(0, 0)] = Some(3);
+fn main() -> Result<(), String> {
+    let s = SudokuClassic::from_string(
+        " ,9,5, , , , , ,
+          , , , , , , , , 
+          , , , , , , , , 
+          , , , , , , , , 
+          , , , , , , , , 
+          , , , , , , , , 
+          , , , , , , , , 
+          , , , , , , , , 
+          , , , , , , , ,",
+    )
+    .unwrap();
     println!("Sudoku is : \n{}", s);
+    Ok(())
 }

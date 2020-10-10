@@ -1,3 +1,4 @@
+//use std::error::Error;
 use std::fmt;
 
 pub mod index;
@@ -11,6 +12,33 @@ pub struct SudokuClassic {
 impl SudokuClassic {
     const ROWS: u8 = 9;
     const COLS: u8 = 9;
+
+    pub fn from_string(data: &str) -> Result<SudokuClassic, String> {
+        use csv::{ReaderBuilder, Trim};
+
+        let get_row = |row: csv::StringRecord| {
+            row.iter()
+                .map(|s| s.parse().unwrap_or(0))
+                .map(|v| if v < 1 || v > 9 { None } else { Some(v) })
+                .collect::<Vec<_>>()
+        };
+        let mut sudoku = vec![];
+        let mut reader = ReaderBuilder::new()
+            .has_headers(false)
+            .trim(Trim::All)
+            .from_reader(data.as_bytes());
+        for row in reader.records() {
+            let mut v = get_row(row.unwrap());
+            if v.len() != SudokuClassic::COLS.into() {
+                return Err(format!("expected 9 columns, got {:}", v.len()));
+            }
+            sudoku.append(&mut v);
+        }
+        if sudoku.len() != (SudokuClassic::COLS * SudokuClassic::ROWS).into() {
+            return Err(format!("invalid sudoku has {} rows", sudoku.len() / 9));
+        }
+        Ok(SudokuClassic { fields: sudoku })
+    }
 
     pub fn new() -> SudokuClassic {
         SudokuClassic {
@@ -76,6 +104,12 @@ mod tests {
 
     #[test]
     fn field_iter() {
+        let sudoku = super::SudokuClassic::from_string("");
+        assert!(sudoku.is_err())
+    }
+
+    #[test]
+    fn fromstring() {
         let mut sudoku = super::SudokuClassic::new();
         sudoku[(3, 3)] = Some(1);
         sudoku[(3, 4)] = Some(2);
@@ -100,6 +134,5 @@ mod tests {
                 Some(9)
             ]
         );
-        println!("Sudoku is : \n{}", sudoku);
     }
 }
