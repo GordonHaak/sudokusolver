@@ -4,29 +4,42 @@ use std::string::ToString;
 pub mod index;
 pub mod iterator;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct SudokuClassic {
     fields: Vec<Option<u8>>,
 }
+
+use iterator::{ColumnIterator, FieldIterator, LineIterator};
 
 impl SudokuClassic {
     const ROWS: u8 = 9;
     const COLS: u8 = 9;
 
     pub fn row<'a>(&'a self, row: u8) -> Box<dyn Iterator<Item = &'a Option<u8>> + 'a> {
-        Box::new(iterator::LineIterator::new(self, row))
+        Box::new(LineIterator::new(self, row))
     }
 
     pub fn col<'a>(&'a self, col: u8) -> Box<dyn Iterator<Item = &'a Option<u8>> + 'a> {
-        Box::new(iterator::ColumnIterator::new(self, col))
+        Box::new(ColumnIterator::new(self, col))
     }
 
     pub fn field<'a>(&'a self, row: u8, col: u8) -> Box<dyn Iterator<Item = &'a Option<u8>> + 'a> {
-        Box::new(iterator::FieldIterator::new(self, row, col))
+        Box::new(FieldIterator::new(self, row, col))
     }
 
-    pub fn next_free_field(&mut self) -> Option<(u8, u8)> {
-        None
+    pub fn free_field(&mut self) -> Option<(u8, u8)> {
+        use std::convert::TryFrom;
+        self.fields
+            .iter()
+            .enumerate()
+            .filter(|(_, v)| v.is_none())
+            .map(|(i, _)| u8::try_from(i).unwrap())
+            .next()
+            .map_or(None, |i| Some(SudokuClassic::pos_to_index(i)))
+    }
+
+    fn pos_to_index(i: u8) -> (u8, u8) {
+        (i / 9, i % 9)
     }
 
     fn index(row: u8, col: u8) -> usize {
@@ -115,6 +128,12 @@ mod tests {
     }
 
     #[test]
+    fn fromto() {
+        let sudoku = SudokuClassic::default();
+        assert_eq!(sudoku.to_string().parse::<SudokuClassic>().unwrap(), sudoku);
+    }
+
+    #[test]
     fn from_string() {
         let sudoku = " , , , , , , , , 
              , , , , , , , , 
@@ -126,7 +145,7 @@ mod tests {
              , , , , , , , , 
              , , , , , , , , "
             .parse::<SudokuClassic>();
-        //assert_eq!(sudoku.unwrap(), super::SudokuClassic::new());
+        assert_eq!(sudoku.unwrap(), SudokuClassic::default());
     }
 
     #[test]
