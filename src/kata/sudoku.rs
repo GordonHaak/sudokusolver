@@ -1,5 +1,5 @@
-//use std::error::Error;
-use std::fmt;
+use std::str::FromStr;
+use std::string::ToString;
 
 pub mod index;
 pub mod iterator;
@@ -12,39 +12,6 @@ pub struct SudokuClassic {
 impl SudokuClassic {
     const ROWS: u8 = 9;
     const COLS: u8 = 9;
-
-    pub fn from_string(data: &str) -> Result<SudokuClassic, String> {
-        use csv::{ReaderBuilder, Trim};
-
-        let get_row = |row: csv::StringRecord| {
-            row.iter()
-                .map(|s| s.parse().unwrap_or(0))
-                .map(|v| if v < 1 || v > 9 { None } else { Some(v) })
-                .collect::<Vec<_>>()
-        };
-        let mut sudoku = vec![];
-        let mut reader = ReaderBuilder::new()
-            .has_headers(false)
-            .trim(Trim::All)
-            .from_reader(data.as_bytes());
-        for row in reader.records() {
-            let mut v = get_row(row.unwrap());
-            if v.len() != SudokuClassic::COLS.into() {
-                return Err(format!("expected 9 columns, got {:}", v.len()));
-            }
-            sudoku.append(&mut v);
-        }
-        if sudoku.len() != (SudokuClassic::COLS * SudokuClassic::ROWS).into() {
-            return Err(format!("invalid sudoku has {} rows", sudoku.len() / 9));
-        }
-        Ok(SudokuClassic { fields: sudoku })
-    }
-
-    pub fn new() -> SudokuClassic {
-        SudokuClassic {
-            fields: vec![None; (SudokuClassic::ROWS * SudokuClassic::COLS).into()],
-        }
-    }
 
     pub fn row<'a>(&'a self, row: u8) -> Box<dyn Iterator<Item = &'a Option<u8>> + 'a> {
         Box::new(iterator::LineIterator::new(self, row))
@@ -70,56 +37,111 @@ impl SudokuClassic {
     }
 }
 
-impl Default for SudokuClassic {
-    fn default() -> Self {
-        Self::new()
+impl FromStr for SudokuClassic {
+    type Err = String;
+
+    fn from_str(data: &str) -> Result<SudokuClassic, String> {
+        use csv::{ReaderBuilder, Trim};
+        let mut sudoku = vec![];
+        let mut reader = ReaderBuilder::new()
+            .has_headers(false)
+            .trim(Trim::All)
+            .from_reader(data.as_bytes());
+        for row in reader.records() {
+            let mut v: Vec<_> = row
+                .unwrap()
+                .iter()
+                .map(|s| s.parse().unwrap_or(0))
+                .map(|v| if v < 1 || v > 9 { None } else { Some(v) })
+                .collect();
+            if v.len() != SudokuClassic::COLS.into() {
+                return Err(format!("expected 9 columns, got {:}", v.len()));
+            }
+            sudoku.append(&mut v);
+        }
+        if sudoku.len() != (SudokuClassic::COLS * SudokuClassic::ROWS).into() {
+            return Err(format!("invalid sudoku has {} rows", sudoku.len() / 9));
+        }
+        Ok(SudokuClassic { fields: sudoku })
     }
 }
 
-impl fmt::Display for SudokuClassic {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for r in 0..SudokuClassic::ROWS - 1 {
-            let row = self.row(r);
-            writeln!(f, "{:?}", row.collect::<Vec<_>>())?;
+impl ToString for SudokuClassic {
+    fn to_string(&self) -> String {
+        let get_row_value = |row: &[Option<u8>]| {
+            row.iter()
+                .map(|v| v.map_or("_".to_string(), |l| l.to_string()))
+                .collect::<Vec<_>>()
+                .join(",")
+        };
+        let chunks: Vec<_> = self.fields.chunks(SudokuClassic::COLS.into()).collect();
+        chunks
+            .iter()
+            .map(|row| get_row_value(row))
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+}
+
+impl Default for SudokuClassic {
+    fn default() -> Self {
+        SudokuClassic {
+            fields: vec![None; (SudokuClassic::ROWS * SudokuClassic::COLS).into()],
         }
-        Ok(())
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::SudokuClassic;
 
     #[test]
     fn sudoku() {
-        let sudoku = super::SudokuClassic::new();
+        let sudoku = SudokuClassic::default();
         assert_eq!(sudoku[(0, 0)], None);
     }
 
     #[test]
     #[should_panic(expected = "invalid index for Sudoku row 9, col 0")]
     fn invalid_sudoku_access() {
-        let sudoku = super::SudokuClassic::new();
+        let sudoku = SudokuClassic::default();
         assert_eq!(sudoku[(9, 0)], None);
     }
 
     #[test]
-    fn field_iter() {
-        let sudoku = super::SudokuClassic::from_string("");
+    fn wrong_data() {
+        let sudoku = "".parse::<SudokuClassic>();
         assert!(sudoku.is_err())
     }
 
     #[test]
-    fn fromstring() {
-        let mut sudoku = super::SudokuClassic::new();
-        sudoku[(3, 3)] = Some(1);
-        sudoku[(3, 4)] = Some(2);
-        sudoku[(3, 5)] = Some(3);
-        sudoku[(4, 3)] = Some(4);
-        sudoku[(4, 4)] = Some(5);
-        sudoku[(4, 5)] = Some(6);
-        sudoku[(5, 3)] = Some(7);
-        sudoku[(5, 4)] = Some(8);
-        sudoku[(5, 5)] = Some(9);
+    fn from_string() {
+        let sudoku = " , , , , , , , , 
+             , , , , , , , , 
+             , , , , , , , , 
+             , , , , , , , , 
+             , , , , , , , , 
+             , , , , , , , , 
+             , , , , , , , , 
+             , , , , , , , , 
+             , , , , , , , , "
+            .parse::<SudokuClassic>();
+        //assert_eq!(sudoku.unwrap(), super::SudokuClassic::new());
+    }
+
+    #[test]
+    fn field_iterator() {
+        let sudoku: SudokuClassic = " , , , , , , , , 
+             , , , , , , , , 
+             , , , , , , , , 
+             , , ,1,2,3, , , 
+             , , ,4,5,6, , , 
+             , , ,7,8,9, , , 
+             , , , , , , , , 
+             , , , , , , , , 
+             , , , , , , , , "
+            .parse()
+            .unwrap();
         assert_eq!(
             sudoku.field(4, 5).map(|v| v.clone()).collect::<Vec<_>>(),
             vec![

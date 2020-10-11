@@ -1,8 +1,7 @@
 use kata::kata::sudoku::SudokuClassic;
 
 fn main() -> Result<(), String> {
-    let s = SudokuClassic::from_string(
-        " ,9,5, , , , , ,
+    let s = " ,9,5, , , , , ,
           , , , , , , , , 
           , , , , , , , , 
           , , , , , , , , 
@@ -10,9 +9,9 @@ fn main() -> Result<(), String> {
           , , , , , , , , 
           , , , , , , , , 
           , , , , , , , , 
-          , , , , , , , ,",
-    )
-    .unwrap();
-    println!("Sudoku is : \n{}", s);
+          , , , , , , , ,"
+        .parse::<SudokuClassic>()
+        .unwrap();
+    println!("Sudoku is : \n{}", s.to_string());
     Ok(())
 }
