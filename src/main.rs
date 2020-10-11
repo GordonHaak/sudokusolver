@@ -1,4 +1,4 @@
-use kata::kata::sudoku::SudokuClassic;
+use sudoku::sudoku::SudokuClassic;
 
 fn main() -> Result<(), String> {
     let mut s = " ,1, , ,3,8, ,6,

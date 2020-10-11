@@ -1,5 +1,5 @@
 [package]
-name = "kata"
+name = "sudoku"
 version = "0.1.0"
 authors = ["centos"]
 edition = "2018"
