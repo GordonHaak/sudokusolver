@@ -27,7 +27,7 @@ impl SudokuClassic {
         Box::new(FieldIterator::new(self, row, col))
     }
 
-    pub fn free_field(&mut self) -> Option<(u8, u8)> {
+    pub fn free_field(&self) -> Option<(u8, u8)> {
         use std::convert::TryFrom;
         self.fields
             .iter()
@@ -36,6 +36,34 @@ impl SudokuClassic {
             .map(|(i, _)| u8::try_from(i).unwrap())
             .next()
             .map_or(None, |i| Some(SudokuClassic::pos_to_index(i)))
+    }
+
+    fn is_valid_entry(&self, r: u8, c: u8) -> bool {
+        let is_unique = |entries: Box<dyn Iterator<Item = &Option<u8>>>| -> bool {
+            use std::collections::HashSet;
+            let mut numbers: HashSet<u8> = HashSet::new();
+            entries
+                .filter(|v| v.is_some())
+                .map(|v| v.unwrap())
+                .all(|v| numbers.insert(v))
+        };
+        is_unique(self.row(r)) && is_unique(self.col(c)) && is_unique(self.field(r, c))
+    }
+
+    pub fn solve(&mut self) -> bool {
+        match self.free_field() {
+            None => true,
+            Some((r, c)) => {
+                for i in 1..=9 {
+                    self[(r, c)] = Some(i);
+                    if self.is_valid_entry(r, c) && self.solve() {
+                        return true;
+                    }
+                    self[(r, c)] = None; //remove the entry to allow another try
+                }
+                false
+            }
+        }
     }
 
     fn pos_to_index(i: u8) -> (u8, u8) {
@@ -146,6 +174,22 @@ mod tests {
              , , , , , , , , "
             .parse::<SudokuClassic>();
         assert_eq!(sudoku.unwrap(), SudokuClassic::default());
+    }
+
+    #[test]
+    fn fielditer() {
+        let sudoku = SudokuClassic::default();
+        assert_eq!(sudoku.field(4, 4).collect::<Vec<_>>().len(), 9)
+    }
+    #[test]
+    fn coliter() {
+        let sudoku = SudokuClassic::default();
+        assert_eq!(sudoku.col(0).collect::<Vec<_>>().len(), 9)
+    }
+    #[test]
+    fn lineiter() {
+        let sudoku = SudokuClassic::default();
+        assert_eq!(sudoku.row(0).collect::<Vec<_>>().len(), 9)
     }
 
     #[test]

@@ -20,11 +20,12 @@ impl<'t> Iterator for LineIterator<'t> {
     type Item = &'t Option<u8>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.col >= SudokuClassic::COLS - 1 {
+        if self.col >= SudokuClassic::COLS {
             None
         } else {
+            let c = self.col;
             self.col += 1;
-            self.data.get(SudokuClassic::index(self.row, self.col - 1))
+            self.data.get(SudokuClassic::index(self.row, c))
         }
     }
 }

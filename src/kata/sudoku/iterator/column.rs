@@ -20,7 +20,7 @@ impl<'t> Iterator for ColumnIterator<'t> {
     type Item = &'t Option<u8>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.row >= SudokuClassic::ROWS - 1 {
+        if self.row >= SudokuClassic::ROWS {
             None
         } else {
             self.row += 1;
