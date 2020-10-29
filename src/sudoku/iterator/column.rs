@@ -25,7 +25,8 @@ impl<'t> Iterator for ColumnIterator<'t> {
             None
         } else {
             self.row += 1;
-            self.data.get(SudokuClassic::index(self.row - 1, self.col))
+            self.data
+                .get(SudokuClassic::index((self.row - 1, self.col)))
         }
     }
 }

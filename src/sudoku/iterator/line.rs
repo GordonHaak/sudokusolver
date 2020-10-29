@@ -26,7 +26,7 @@ impl<'t> Iterator for LineIterator<'t> {
         } else {
             let c = self.col;
             self.col += 1;
-            self.data.get(SudokuClassic::index(self.row, c))
+            self.data.get(SudokuClassic::index((self.row, c)))
         }
     }
 }

@@ -28,8 +28,10 @@ impl<'t> Iterator for FieldIterator<'t> {
         } else {
             let p = self.pos;
             self.pos += 1;
-            self.data
-                .get(SudokuClassic::index(self.row + (p / 3), self.col + (p % 3)))
+            self.data.get(SudokuClassic::index((
+                self.row + (p / 3),
+                self.col + (p % 3),
+            )))
         }
     }
 }

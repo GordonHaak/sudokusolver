@@ -19,15 +19,15 @@ impl SudokuClassic {
     const ROWS: IndexType = 9;
     const COLS: IndexType = 9;
 
-    pub fn row<'a>(&'a self, row: IndexType) -> IterType {
+    pub fn row(&self, row: IndexType) -> IterType {
         Box::new(LineIterator::new(self, row))
     }
 
-    pub fn col<'a>(&'a self, col: IndexType) -> IterType {
+    pub fn col(&self, col: IndexType) -> IterType {
         Box::new(ColumnIterator::new(self, col))
     }
 
-    pub fn field<'a>(&'a self, row: IndexType, col: IndexType) -> IterType {
+    pub fn field(&self, row: IndexType, col: IndexType) -> IterType {
         Box::new(FieldIterator::new(self, row, col))
     }
 
@@ -35,9 +35,8 @@ impl SudokuClassic {
         self.fields
             .iter()
             .enumerate()
-            .filter(|(_, v)| v.is_none())
-            .next()
-            .map_or(None, |(i, _)| Some(SudokuClassic::pos_to_index(i)))
+            .find(|(_, v)| v.is_none())
+            .map(|(i, _)| SudokuClassic::pos_to_index(i))
     }
 
     fn is_valid_entry(&self, r: IndexType, c: IndexType) -> bool {
@@ -72,11 +71,11 @@ impl SudokuClassic {
         (i / 9, i % 9)
     }
 
-    fn index(row: usize, col: usize) -> usize {
+    fn index((row, col): IndexTuple) -> usize {
         if row >= SudokuClassic::ROWS || col >= SudokuClassic::COLS {
             panic!("invalid index for Sudoku row {}, col {}", row, col);
         }
-        (row * SudokuClassic::ROWS + col).into()
+        row * SudokuClassic::ROWS + col
     }
 }
 
@@ -97,12 +96,12 @@ impl FromStr for SudokuClassic {
                 .map(|s| s.parse().unwrap_or(0))
                 .map(|v| if v < 1 || v > 9 { None } else { Some(v) })
                 .collect();
-            if v.len() != SudokuClassic::COLS.into() {
+            if v.len() != SudokuClassic::COLS {
                 return Err(format!("expected 9 columns, got {:}", v.len()));
             }
             sudoku.append(&mut v);
         }
-        if sudoku.len() != (SudokuClassic::COLS * SudokuClassic::ROWS).into() {
+        if sudoku.len() != (SudokuClassic::COLS * SudokuClassic::ROWS) {
             return Err(format!("invalid sudoku has {} rows", sudoku.len() / 9));
         }
         Ok(SudokuClassic { fields: sudoku })
@@ -117,7 +116,7 @@ impl ToString for SudokuClassic {
                 .collect::<Vec<_>>()
                 .join(",")
         };
-        let chunks: Vec<_> = self.fields.chunks(SudokuClassic::COLS.into()).collect();
+        let chunks: Vec<_> = self.fields.chunks(SudokuClassic::COLS).collect();
         chunks
             .iter()
             .map(|row| get_row_value(row))
@@ -129,7 +128,7 @@ impl ToString for SudokuClassic {
 impl Default for SudokuClassic {
     fn default() -> Self {
         SudokuClassic {
-            fields: vec![None; (SudokuClassic::ROWS * SudokuClassic::COLS).into()],
+            fields: vec![None; SudokuClassic::ROWS * SudokuClassic::COLS],
         }
     }
 }
