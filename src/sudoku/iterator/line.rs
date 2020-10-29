@@ -2,7 +2,7 @@ use super::super::IndexType;
 use super::super::SudokuClassic;
 
 pub struct LineIterator<'a> {
-    data: &'a Vec<Option<u8>>,
+    sudoku: &'a SudokuClassic,
     row: IndexType,
     col: IndexType,
 }
@@ -10,7 +10,7 @@ pub struct LineIterator<'a> {
 impl LineIterator<'_> {
     pub fn new(sudoku: &SudokuClassic, row: IndexType) -> LineIterator {
         LineIterator {
-            data: &sudoku.fields,
+            sudoku: &sudoku,
             row,
             col: 0,
         }
@@ -26,7 +26,7 @@ impl<'t> Iterator for LineIterator<'t> {
         } else {
             let c = self.col;
             self.col += 1;
-            self.data.get(SudokuClassic::index((self.row, c)))
+            Some(&self.sudoku[(self.row, c)])
         }
     }
 }

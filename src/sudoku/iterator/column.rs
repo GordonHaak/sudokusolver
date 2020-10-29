@@ -2,7 +2,7 @@ use super::super::IndexType;
 use super::super::SudokuClassic;
 
 pub struct ColumnIterator<'a> {
-    data: &'a Vec<Option<u8>>,
+    sudoku: &'a SudokuClassic,
     row: IndexType,
     col: IndexType,
 }
@@ -10,7 +10,7 @@ pub struct ColumnIterator<'a> {
 impl ColumnIterator<'_> {
     pub fn new(sudoku: &SudokuClassic, col: IndexType) -> ColumnIterator {
         ColumnIterator {
-            data: &sudoku.fields,
+            sudoku: &sudoku,
             row: 0,
             col,
         }
@@ -25,8 +25,7 @@ impl<'t> Iterator for ColumnIterator<'t> {
             None
         } else {
             self.row += 1;
-            self.data
-                .get(SudokuClassic::index((self.row - 1, self.col)))
+            Some(&self.sudoku[(self.row - 1, self.col)])
         }
     }
 }

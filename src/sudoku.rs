@@ -36,7 +36,7 @@ impl SudokuClassic {
             .iter()
             .enumerate()
             .find(|(_, v)| v.is_none())
-            .map(|(i, _)| SudokuClassic::pos_to_index(i))
+            .map(|(i, _)| (i / 9, i % 9))
     }
 
     fn is_valid_entry(&self, r: IndexType, c: IndexType) -> bool {
@@ -65,17 +65,6 @@ impl SudokuClassic {
                 false
             }
         }
-    }
-
-    fn pos_to_index(i: IndexType) -> IndexTuple {
-        (i / 9, i % 9)
-    }
-
-    fn index((row, col): IndexTuple) -> usize {
-        if row >= SudokuClassic::ROWS || col >= SudokuClassic::COLS {
-            panic!("invalid index for Sudoku row {}, col {}", row, col);
-        }
-        row * SudokuClassic::ROWS + col
     }
 }
 
