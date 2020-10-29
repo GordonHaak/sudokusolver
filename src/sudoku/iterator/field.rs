@@ -1,14 +1,15 @@
+use super::super::IndexType;
 use super::super::SudokuClassic;
 
 pub struct FieldIterator<'a> {
     data: &'a Vec<Option<u8>>,
-    row: u8,
-    col: u8,
-    pos: u8,
+    row: IndexType,
+    col: IndexType,
+    pos: IndexType,
 }
 
 impl FieldIterator<'_> {
-    pub fn new(sudoku: &SudokuClassic, row: u8, col: u8) -> FieldIterator {
+    pub fn new(sudoku: &SudokuClassic, row: IndexType, col: IndexType) -> FieldIterator {
         FieldIterator {
             data: &sudoku.fields,
             row: row / 3 * 3,

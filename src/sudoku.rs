@@ -11,35 +11,37 @@ pub struct SudokuClassic {
 
 use iterator::{ColumnIterator, FieldIterator, LineIterator};
 
-impl SudokuClassic {
-    const ROWS: u8 = 9;
-    const COLS: u8 = 9;
+type IndexType = usize;
+type IndexTuple = (IndexType, IndexType);
+type IterType<'a> = Box<dyn Iterator<Item = &'a Option<u8>> + 'a>;
 
-    pub fn row<'a>(&'a self, row: u8) -> Box<dyn Iterator<Item = &'a Option<u8>> + 'a> {
+impl SudokuClassic {
+    const ROWS: IndexType = 9;
+    const COLS: IndexType = 9;
+
+    pub fn row<'a>(&'a self, row: IndexType) -> IterType {
         Box::new(LineIterator::new(self, row))
     }
 
-    pub fn col<'a>(&'a self, col: u8) -> Box<dyn Iterator<Item = &'a Option<u8>> + 'a> {
+    pub fn col<'a>(&'a self, col: IndexType) -> IterType {
         Box::new(ColumnIterator::new(self, col))
     }
 
-    pub fn field<'a>(&'a self, row: u8, col: u8) -> Box<dyn Iterator<Item = &'a Option<u8>> + 'a> {
+    pub fn field<'a>(&'a self, row: IndexType, col: IndexType) -> IterType {
         Box::new(FieldIterator::new(self, row, col))
     }
 
-    pub fn free_field(&self) -> Option<(u8, u8)> {
-        use std::convert::TryFrom;
+    pub fn free_field(&self) -> Option<IndexTuple> {
         self.fields
             .iter()
             .enumerate()
             .filter(|(_, v)| v.is_none())
-            .map(|(i, _)| u8::try_from(i).unwrap())
             .next()
-            .map_or(None, |i| Some(SudokuClassic::pos_to_index(i)))
+            .map_or(None, |(i, _)| Some(SudokuClassic::pos_to_index(i)))
     }
 
-    fn is_valid_entry(&self, r: u8, c: u8) -> bool {
-        let is_unique = |entries: Box<dyn Iterator<Item = &Option<u8>>>| -> bool {
+    fn is_valid_entry(&self, r: IndexType, c: IndexType) -> bool {
+        let is_unique = |entries: IterType| -> bool {
             use std::collections::HashSet;
             let mut numbers: HashSet<u8> = HashSet::new();
             entries
@@ -66,11 +68,11 @@ impl SudokuClassic {
         }
     }
 
-    fn pos_to_index(i: u8) -> (u8, u8) {
+    fn pos_to_index(i: IndexType) -> IndexTuple {
         (i / 9, i % 9)
     }
 
-    fn index(row: u8, col: u8) -> usize {
+    fn index(row: usize, col: usize) -> usize {
         if row >= SudokuClassic::ROWS || col >= SudokuClassic::COLS {
             panic!("invalid index for Sudoku row {}, col {}", row, col);
         }

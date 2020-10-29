@@ -1,13 +1,14 @@
+use super::super::IndexType;
 use super::super::SudokuClassic;
 
 pub struct LineIterator<'a> {
     data: &'a Vec<Option<u8>>,
-    row: u8,
-    col: u8,
+    row: IndexType,
+    col: IndexType,
 }
 
 impl LineIterator<'_> {
-    pub fn new(sudoku: &SudokuClassic, row: u8) -> LineIterator {
+    pub fn new(sudoku: &SudokuClassic, row: IndexType) -> LineIterator {
         LineIterator {
             data: &sudoku.fields,
             row,
