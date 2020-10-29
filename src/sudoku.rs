@@ -71,7 +71,7 @@ impl SudokuClassic {
 impl FromStr for SudokuClassic {
     type Err = String;
 
-    fn from_str(data: &str) -> Result<SudokuClassic, String> {
+    fn from_str(data: &str) -> Result<SudokuClassic, Self::Err> {
         use csv::{ReaderBuilder, Trim};
         let mut sudoku = vec![];
         let mut reader = ReaderBuilder::new()
