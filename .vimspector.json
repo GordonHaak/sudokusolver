@@ -1,11 +1,10 @@
 {
     "configurations": {
         "Launch": {
-            "adapter": "vscode-cpptools",
+            "adapter": "CodeLLDB",
             "configuration": {
                 "request": "launch",
-                "program": "./target/debug/sudoku",
-                "stopAtEntry": true
+                "program": "./target/debug/sudoku"
             }
         }
     }
