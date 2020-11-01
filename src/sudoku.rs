@@ -31,14 +31,6 @@ impl SudokuClassic {
         Box::new(FieldIterator::new(self, row, col))
     }
 
-    pub fn free_field(&self) -> Option<IndexTuple> {
-        self.fields
-            .iter()
-            .enumerate()
-            .find(|(_, v)| v.is_none())
-            .map(|(i, _)| (i / 9, i % 9))
-    }
-
     fn is_valid_entry(&self, r: IndexType, c: IndexType) -> bool {
         let is_unique = |entries: IterType| -> bool {
             use std::collections::HashSet;
@@ -52,9 +44,11 @@ impl SudokuClassic {
     }
 
     pub fn solve(&mut self) -> bool {
-        match self.free_field() {
+        let free_field = self.fields.iter().position(|v| v.is_none());
+        match free_field {
             None => true,
-            Some((r, c)) => {
+            Some(position) => {
+                let (r, c) = (position / 9, position % 9);
                 for i in 1..=9 {
                     self[(r, c)] = Some(i);
                     if self.is_valid_entry(r, c) && self.solve() {
