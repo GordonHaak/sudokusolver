@@ -1,27 +1,28 @@
+use super::super::Classic;
 use super::super::IndexType;
-use super::super::SudokuClassic;
 
-pub struct LineIterator<'a> {
-    sudoku: &'a SudokuClassic,
+pub struct Iterator<'a> {
+    sudoku: &'a Classic,
     row: IndexType,
     col: IndexType,
 }
 
-impl LineIterator<'_> {
-    pub fn new(sudoku: &SudokuClassic, row: IndexType) -> LineIterator {
-        LineIterator {
-            sudoku: &sudoku,
+impl Iterator<'_> {
+    #[must_use]
+    pub const fn new(sudoku: &Classic, row: IndexType) -> Iterator {
+        Iterator {
+            sudoku,
             row,
             col: 0,
         }
     }
 }
 
-impl<'t> Iterator for LineIterator<'t> {
+impl<'t> std::iter::Iterator for Iterator<'t> {
     type Item = &'t Option<u8>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.col >= SudokuClassic::COLS {
+        if self.col >= Classic::COLS {
             None
         } else {
             let c = self.col;

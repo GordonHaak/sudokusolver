@@ -1,15 +1,15 @@
+use super::Classic;
 use super::IndexTuple;
-use super::SudokuClassic;
 use std::ops::{Index, IndexMut};
 
 fn to_pos((row, col): IndexTuple) -> usize {
-    if row >= SudokuClassic::ROWS || col >= SudokuClassic::COLS {
+    if row >= Classic::ROWS || col >= Classic::COLS {
         panic!("invalid index for Sudoku row {}, col {}", row, col);
     }
-    row * SudokuClassic::ROWS + col
+    row * Classic::ROWS + col
 }
 
-impl Index<IndexTuple> for SudokuClassic {
+impl Index<IndexTuple> for Classic {
     type Output = Option<u8>;
 
     fn index(&self, index: IndexTuple) -> &Self::Output {
@@ -17,7 +17,7 @@ impl Index<IndexTuple> for SudokuClassic {
     }
 }
 
-impl IndexMut<IndexTuple> for SudokuClassic {
+impl IndexMut<IndexTuple> for Classic {
     fn index_mut(&mut self, index: IndexTuple) -> &mut Self::Output {
         &mut self.fields[to_pos(index)]
     }

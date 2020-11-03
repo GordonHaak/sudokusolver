@@ -1,17 +1,18 @@
+use super::super::Classic;
 use super::super::IndexType;
-use super::super::SudokuClassic;
 
-pub struct FieldIterator<'a> {
-    sudoku: &'a SudokuClassic,
+pub struct Iterator<'a> {
+    sudoku: &'a Classic,
     row: IndexType,
     col: IndexType,
     pos: IndexType,
 }
 
-impl FieldIterator<'_> {
-    pub fn new(sudoku: &SudokuClassic, row: IndexType, col: IndexType) -> FieldIterator {
-        FieldIterator {
-            sudoku: &sudoku,
+impl Iterator<'_> {
+    #[must_use]
+    pub const fn new(sudoku: &Classic, row: IndexType, col: IndexType) -> Iterator {
+        Iterator {
+            sudoku,
             row: row / 3 * 3,
             col: col / 3 * 3,
             pos: 0,
@@ -19,7 +20,7 @@ impl FieldIterator<'_> {
     }
 }
 
-impl<'t> Iterator for FieldIterator<'t> {
+impl<'t> std::iter::Iterator for Iterator<'t> {
     type Item = &'t Option<u8>;
 
     fn next(&mut self) -> Option<Self::Item> {
