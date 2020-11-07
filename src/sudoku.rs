@@ -52,7 +52,8 @@ impl Classic {
         self.clone().solve()
     }
 
-    fn solve(&mut self) -> Vec<Self> {
+    #[must_use]
+    pub fn solve(&mut self) -> Vec<Self> {
         let free_field = self.fields.iter().position(Option::is_none);
         match free_field {
             None => vec![self.clone()],
@@ -184,6 +185,37 @@ mod tests {
     fn lineiter() {
         let sudoku = Classic::default();
         assert_eq!(sudoku.row(0).count(), 9)
+    }
+
+    #[test]
+    fn solve() {
+        let s = " ,1, , ,3,8, ,6,
+          , , , , ,1, ,4,5
+         5,9, , , , , , , 
+          , , ,3,9, ,1, , 
+         6,5, , , , , , , 
+          , , ,1,6, , ,2, 
+          , , ,6,1,4, , , 
+          , ,7, , , , , , 
+          , , , , , ,8, ,9"
+            .parse::<Classic>()
+            .unwrap();
+        let expected = "
+2,1,4,5,3,8,9,6,7
+7,8,6,9,2,1,3,4,5
+5,9,3,7,4,6,2,8,1
+8,4,2,3,9,7,1,5,6
+6,5,1,4,8,2,7,9,3
+3,7,9,1,6,5,4,2,8
+9,3,8,6,1,4,5,7,2
+1,2,7,8,5,9,6,3,4
+4,6,5,2,7,3,8,1,9"
+            .parse::<Classic>()
+            .unwrap();
+        let v = s.solve_all();
+        assert_eq!(v.len(), 1);
+        println!("result is: \n{}", v.get(0).unwrap().to_string());
+        assert_eq!(*v.get(0).unwrap(), expected);
     }
 
     #[test]
